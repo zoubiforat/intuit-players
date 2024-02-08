@@ -7,7 +7,6 @@ import com.intuit.demo.repository.PlayerRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -42,5 +41,9 @@ public class PlayerService {
 
     public List<Player> getAllPlayers() {
         return this.playerRepository.findAll();
+    }
+
+    public void resetPlayers() {
+        this.playerRepository.deleteAll();
     }
 }

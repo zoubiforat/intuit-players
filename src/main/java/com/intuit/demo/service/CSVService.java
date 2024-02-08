@@ -1,6 +1,6 @@
 package com.intuit.demo.service;
 
-import java.io.FileReader;
+import java.io.*;
 
 import com.intuit.demo.enitity.PlayerBuilder;
 import com.intuit.demo.enitity.Player;
@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Service
@@ -18,10 +19,14 @@ public class CSVService {
     @Autowired
     private PlayerService playerService;
 
-    @PostConstruct
+//    @PostConstruct
+    public void loadLocalResources() throws FileNotFoundException {
+        fetchData(ResourceUtils.getFile("classpath:player.csv"));
+    }
+
     @Transactional
-    public void fetchData(){
-        try(CSVReader csvReader = new CSVReader(new FileReader(ResourceUtils.getFile("classpath:player.csv")))) {
+    public void fetchData(File file){
+        try(CSVReader csvReader = new CSVReader(new FileReader(file))) {
             String[] headers = csvReader.readNext();
             if (headers != null) {
                 String[] nextRecord;
@@ -70,6 +75,24 @@ public class CSVService {
         catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public File convert(MultipartFile file) {
+        File convFile = new File(file.getOriginalFilename());
+        try {
+            convFile.createNewFile();
+            FileOutputStream fos = new FileOutputStream(convFile);
+            fos.write(file.getBytes());
+            fos.close(); //IOUtils.closeQuietly(fos);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return convFile;
+    }
+
+
+    public void importPlayers(MultipartFile file) {
+        fetchData(convert(file));
     }
 
 }
